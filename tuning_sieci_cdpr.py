@@ -58,7 +58,7 @@ def objective(trial):
     aktywacja_out = trial.suggest_categorical('aktywacja_out',['sigmoid','tanh','elu','relu','linear'])
     epochs = trial.suggest_int('epochs',5,30)
     learning_rate = trial.suggest_float('learning_rate',10e-5,10e-3,log = True)
-    lags = trial.suggest_int('lags',1,30)
+    lags = trial.suggest_int('lags',10,30)
     #rec_h_std = pd.DataFrame(StandardScaler().fit_transform(rec_h),columns = rec_h.columns,index=rec_h.index)
     
     rec_h_x,rec_h_y = recursive_array(rec_h,lags)
