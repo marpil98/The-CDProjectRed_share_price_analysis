@@ -20,10 +20,12 @@ def siec_rekurencyjna(x,warstwy,neurony,aktywacja_LSTM,aktywacja_rekurencji,out_
     
     return out
 
-def siec_konwolucyjna(x,warstwy,filtry,strides,kernel_size,aktywacja,pooling,pooling_type = 'global',out_act = 'linear'):
-
-    if type(filtry)==int:
-        filtry = [filtry for _ in range(warstwy)]
+def siec_konwolucyjna(x,warstwy,filtry,strides,kernel_size,aktywacja,pooling,pooling_type = 'global',out_act = 'linear',increase_filters = None):
+    if increase_filters!=None:
+        filtry = [filtry*(increase_filters**i) for i in range(warstwy)]
+    else:
+        if type(filtry)==int:
+            filtry = [filtry for _ in range(warstwy)]
     if type(strides)==int:
         strides = [strides for _ in range(warstwy)]
     if type(aktywacja)!=list:
@@ -31,9 +33,9 @@ def siec_konwolucyjna(x,warstwy,filtry,strides,kernel_size,aktywacja,pooling,poo
     if pooling_type!='global' and type(pooling)!=list:
         pooling = [pooling for _ in range(pooling)]
     for i in range(warstwy):
-        
+        x = BatchNormalization()(x)
         x = Conv2D(filters=filtry[i],kernel_size = kernel_size,strides = strides[i],padding = 'same')(x)
-        x = aktywacja(x)
+        x = Activation(aktywacja[i])(x)
         if pooling_type!='global':
             x = pooling[i](x)
     if pooling_type=='global':

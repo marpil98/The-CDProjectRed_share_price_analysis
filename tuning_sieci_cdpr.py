@@ -15,7 +15,7 @@ from sklearn.metrics import mean_absolute_error as mae
 
 import tensorflow as tf
 import numpy as np
-
+import gc
 class TerminateOnNaN(tf.keras.callbacks.Callback):
     def on_batch_end(self, batch, logs=None):
         if logs.get('loss') is not None and np.isnan(logs.get('loss')):
@@ -51,12 +51,13 @@ rec_h = rec.drop(columns = 'Low')
 rec_l = rec.drop(columns = 'High')
 
 def objective(trial):
+    gc.collect()
     l_warstw = trial.suggest_int('l_warstw',1,10)
-    l_neuronow = trial.suggest_int('l_neuronow',1,10)
+    l_neuronow = trial.suggest_int('l_neuronow',1,3)
     aktywacja_lstm = trial.suggest_categorical('aktywacja_lstm',['sigmoid','tanh'])#,
     aktywacja_rek = trial.suggest_categorical('aktywacja_rek',['sigmoid','tanh','elu','relu','linear'])
     aktywacja_out = trial.suggest_categorical('aktywacja_out',['sigmoid','tanh','elu','relu','linear'])
-    epochs = trial.suggest_int('epochs',5,30)
+    epochs = 50#trial.suggest_int('epochs',10,30)
     learning_rate = trial.suggest_float('learning_rate',10e-5,10e-3,log = True)
     lags = trial.suggest_int('lags',10,30)
     #rec_h_std = pd.DataFrame(StandardScaler().fit_transform(rec_h),columns = rec_h.columns,index=rec_h.index)
@@ -68,7 +69,8 @@ def objective(trial):
     out = siec_rekurencyjna(x,l_warstw,l_neuronow,aktywacja_lstm,aktywacja_rek,aktywacja_out)
     model = Model(x,out)
     model.compile(optimizer=Adam(learning_rate=learning_rate, clipnorm=1.0), loss=MeanAbsoluteError(), metrics=['mae'])
-    history = model.fit(train_h_x,train_h_y,validation_split=.2, epochs=epochs, batch_size=32, verbose=True, callbacks=[TerminateOnNaN()])
+    history = model.fit(train_h_x,train_h_y,validation_split=.2, epochs=epochs, batch_size=64, verbose=True, callbacks=[TerminateOnNaN()])
+    gc.collect()
     pred = model.predict(test_h_x)
     if np.any(np.isnan(pred)):
         return history.history['val_mae']
