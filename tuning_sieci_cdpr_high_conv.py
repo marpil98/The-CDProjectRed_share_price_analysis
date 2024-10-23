@@ -137,7 +137,6 @@ if __name__ == "__main__":
         model = Model(x,out)
         model.compile(optimizer=Adam(learning_rate=learning_rate, clipnorm=1.0), loss=MeanSquaredError(), metrics=[RootMeanSquaredError()])
         # Callback to saving best trial
-        print(train_l_x.shape)
         history = model.fit(train_h_x,train_h_y,validation_split=.2, 
                             epochs=epochs, batch_size=16, 
                             verbose=True, callbacks=[TerminateOnNaN(),early_stop,reduce_lr])
