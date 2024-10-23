@@ -75,15 +75,15 @@ def build_best_model(params):
     else:
         pool_fun = GlobalAveragePooling2D()
     #rec_h_std = pd.DataFrame(StandardScaler().fit_transform(rec_h),columns = rec_h.columns,index=rec_h.index)
-    rec_l_x,rec_l_y = recursive_array(rec_l,lags)
-    print(rec_l_x)
-    rec_l_x = np.expand_dims(rec_l_x,axis=3)
+    rec_h_x,rec_h_y = recursive_array(rec_h,lags)
+    print(rec_h_x)
+    rec_h_x = np.expand_dims(rec_h_x,axis=3)
     x = Input((lags,3,1))
     out = siec_konwolucyjna(x,warstwy,filtry,strides,kernel_size,aktywacja,pool_fun,pooling_type = 'global',out_act = aktywacja_out,increase_filters =increase_filters)
     model = Model(x,out)
     model.compile(optimizer=Adam(learning_rate=learning_rate, clipnorm=1.0), loss=MeanSquaredError(), metrics=[RootMeanSquaredError()])
     # Callback to saving best trial
-    history = model.fit(rec_l_x,rec_l_y,validation_split=.2, 
+    history = model.fit(rec_h_x,rec_h_y,validation_split=.2, 
                         epochs=epochs, batch_size=16, 
                         verbose=True, callbacks=[TerminateOnNaN(),early_stop,reduce_lr])
     gc.collect()
@@ -129,25 +129,24 @@ if __name__ == "__main__":
         else:
             pool_fun = GlobalAveragePooling2D()
         lags = trial.suggest_int('lags',5,30)
-        #rec_h_std = pd.DataFrame(StandardScaler().fit_transform(rec_h),columns = rec_h.columns,index=rec_h.index)
-        rec_l_x,rec_l_y = recursive_array(rec_l,lags)
-        rec_l_x = np.expand_dims(rec_l_x,axis=3)
-        train_l_x, test_l_x,train_l_y, test_l_y = rec_l_x[:int(.8*len(rec_l_x))],rec_l_x[int(.8*len(rec_l_x)):],rec_l_y[:int(.8*len(rec_l_x))],rec_l_y[int(.8*len(rec_l_x)):]
+        rec_h_x,rec_h_y = recursive_array(rec_h,lags)
+        rec_h_x = np.expand_dims(rec_h_x,axis=3)
+        train_h_x, test_h_x,train_h_y, test_h_y = rec_h_x[:int(.8*len(rec_h_x))],rec_h_x[int(.8*len(rec_h_x)):],rec_h_y[:int(.8*len(rec_h_y))],rec_h_y[int(.8*len(rec_h_y)):]
         x = Input((lags,3,1))
         out = siec_konwolucyjna(x,warstwy,filtry,strides,kernel_size,aktywacja,pool_fun,pooling_type = 'global',out_act = aktywacja_out,increase_filters =increase_filters)
         model = Model(x,out)
         model.compile(optimizer=Adam(learning_rate=learning_rate, clipnorm=1.0), loss=MeanSquaredError(), metrics=[RootMeanSquaredError()])
         # Callback to saving best trial
         print(train_l_x.shape)
-        history = model.fit(train_l_x,train_l_y,validation_split=.2, 
+        history = model.fit(train_h_x,train_h_y,validation_split=.2, 
                             epochs=epochs, batch_size=16, 
                             verbose=True, callbacks=[TerminateOnNaN(),early_stop,reduce_lr])
         gc.collect()
-        pred = model.predict(test_l_x)
+        pred = model.predict(test_h_x)
         if np.any(np.isnan(pred)):
             return history.history['val_mae']
         else:
-            return mae(test_l_y,pred)
+            return mae(test_h_y,pred)
 
 
 
