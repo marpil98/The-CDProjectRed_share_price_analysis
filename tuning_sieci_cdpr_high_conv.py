@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
 
     storage_name = 'sqlite:///cdpt_conv.db'
-    study = optuna.create_study(study_name = 'cdpr_low_another_dim',direction='minimize', storage=storage_name, load_if_exists=True)
+    study = optuna.create_study(study_name = 'cdpr_high',direction='minimize', storage=storage_name, load_if_exists=True)
     study.optimize(objective,n_trials=1000)
     print(study.best_params)
 
