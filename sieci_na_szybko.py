@@ -20,7 +20,7 @@ def siec_rekurencyjna(x,warstwy,neurony,aktywacja_LSTM,aktywacja_rekurencji,out_
     
     return out
 
-def siec_konwolucyjna(x,warstwy,filtry,strides,kernel_size,aktywacja,pooling,pooling_type = 'global',out_act = 'linear',increase_filters = None):
+def siec_konwolucyjna(x,warstwy,filtry,strides,kernel_size,aktywacja,pooling,pooling_type = 'global',out_act = 'linear',increase_filters = None,out_units=1):
     if increase_filters!=None:
         filtry = [filtry*(increase_filters**i) for i in range(warstwy)]
     else:
@@ -41,7 +41,7 @@ def siec_konwolucyjna(x,warstwy,filtry,strides,kernel_size,aktywacja,pooling,poo
     if pooling_type=='global':
         x = pooling(x)
     x = Flatten()(x)
-    out = Dense(units = 1,activation = out_act)(x)
+    out = Dense(units = out_units,activation = out_act)(x)
     
     return out
 
