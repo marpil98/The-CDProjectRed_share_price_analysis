@@ -272,7 +272,7 @@ if __name__ == "__main__":
         storage=storage_name, load_if_exists=True
         )
     
-    study.optimize(objective,n_trials=10)
+    study.optimize(objective,n_trials=1000)
     
     print(study.best_params)
 
